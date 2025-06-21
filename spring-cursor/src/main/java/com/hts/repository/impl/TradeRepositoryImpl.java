@@ -1,0 +1,43 @@
+package com.hts.repository.impl;
+
+import com.hts.domain.Trade;
+import com.hts.repository.TradeRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+@Repository
+public class TradeRepositoryImpl implements TradeRepository {
+
+    private final ConcurrentMap<String, Trade> tradeStore = new ConcurrentHashMap<>();
+
+    @Override
+    public Trade save(Trade trade) {
+        tradeStore.put(trade.getTradeId(), trade);
+        return trade;
+    }
+
+    @Override
+    public Optional<Trade> findByTradeId(String tradeId) {
+        return Optional.ofNullable(tradeStore.get(tradeId));
+    }
+
+    @Override
+    public List<Trade> findByAccountId(String accountId) {
+        return tradeStore.values().stream()
+                .filter(trade -> trade.getAccountId().equals(accountId))
+                .toList();
+    }
+
+    @Override
+    public List<Trade> findByAccountIdAndTicker(String accountId, String ticker) {
+        return tradeStore.values().stream()
+                .filter(trade -> trade.getAccountId().equals(accountId) && 
+                               trade.getTicker().equals(ticker))
+                .toList();
+    }
+} 
