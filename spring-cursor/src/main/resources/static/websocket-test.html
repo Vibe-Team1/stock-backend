@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .success { background-color: #d4edda; color: #155724; }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f8f9fa;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .sent { background-color: #e3f2fd; }
+        .received { background-color: #f3e5f5; }
+        .error { background-color: #ffebee; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Test Client</h1>
+    
+    <div class="status" id="connectionStatus">Disconnected</div>
+    
+    <div class="container">
+        <div class="panel">
+            <h3>Connection</h3>
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+        </div>
+        
+        <div class="panel">
+            <h3>Requests</h3>
+            <div>
+                <label>Ticker:</label>
+                <input type="text" id="tickerInput" value="005930" placeholder="Enter ticker">
+            </div>
+            <div>
+                <label>Interval:</label>
+                <select id="intervalSelect">
+                    <option value="ONE_MINUTE">1 Minute</option>
+                    <option value="FIVE_MINUTES">5 Minutes</option>
+                    <option value="FIFTEEN_MINUTES">15 Minutes</option>
+                    <option value="THIRTY_MINUTES">30 Minutes</option>
+                    <option value="ONE_HOUR">1 Hour</option>
+                    <option value="ONE_DAY">1 Day</option>
+                </select>
+            </div>
+            <button onclick="getStockData()">Get Stock Data</button>
+            <button onclick="getChartData()">Get Chart Data</button>
+            <button onclick="subscribeToTicker()">Subscribe</button>
+            <button onclick="unsubscribeFromTicker()">Unsubscribe</button>
+            <button onclick="ping()">Ping</button>
+        </div>
+    </div>
+    
+    <div class="panel">
+        <h3>Messages</h3>
+        <button onclick="clearMessages()">Clear</button>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let requestId = 1;
+
+        function updateConnectionStatus(connected, message = '') {
+            const statusDiv = document.getElementById('connectionStatus');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connected) {
+                statusDiv.textContent = 'Connected' + (message ? ': ' + message : '');
+                statusDiv.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusDiv.textContent = 'Disconnected' + (message ? ': ' + message : '');
+                statusDiv.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function addMessage(message, type = 'received') {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function connect() {
+            try {
+                socket = new WebSocket('ws://localhost:8080/ws/chart');
+                
+                socket.onopen = function(event) {
+                    updateConnectionStatus(true, 'WebSocket connection established');
+                    addMessage('Connected to WebSocket', 'success');
+                };
+                
+                socket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    addMessage(`Received: ${JSON.stringify(data, null, 2)}`, 'received');
+                };
+                
+                socket.onclose = function(event) {
+                    updateConnectionStatus(false, 'Connection closed');
+                    addMessage('WebSocket connection closed', 'error');
+                };
+                
+                socket.onerror = function(error) {
+                    updateConnectionStatus(false, 'Connection error');
+                    addMessage('WebSocket error: ' + error, 'error');
+                };
+                
+            } catch (error) {
+                updateConnectionStatus(false, 'Failed to connect');
+                addMessage('Failed to connect: ' + error.message, 'error');
+            }
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.close();
+                socket = null;
+            }
+        }
+
+        function sendRequest(type, payload = null) {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                addMessage('WebSocket is not connected', 'error');
+                return;
+            }
+
+            const request = {
+                type: type,
+                requestId: (requestId++).toString(),
+                payload: payload
+            };
+
+            const message = JSON.stringify(request);
+            socket.send(message);
+            addMessage(`Sent: ${message}`, 'sent');
+        }
+
+        function getStockData() {
+            const ticker = document.getElementById('tickerInput').value;
+            if (!ticker) {
+                addMessage('Please enter a ticker', 'error');
+                return;
+            }
+            
+            sendRequest('GET_STOCK_DATA', { ticker: ticker });
+        }
+
+        function getChartData() {
+            const ticker = document.getElementById('tickerInput').value;
+            const interval = document.getElementById('intervalSelect').value;
+            
+            if (!ticker) {
+                addMessage('Please enter a ticker', 'error');
+                return;
+            }
+            
+            sendRequest('GET_CHART_DATA', { 
+                ticker: ticker, 
+                interval: interval,
+                limit: 100
+            });
+        }
+
+        function subscribeToTicker() {
+            const ticker = document.getElementById('tickerInput').value;
+            if (!ticker) {
+                addMessage('Please enter a ticker', 'error');
+                return;
+            }
+            
+            sendRequest('SUBSCRIBE_TO_TICKER', { ticker: ticker });
+        }
+
+        function unsubscribeFromTicker() {
+            const ticker = document.getElementById('tickerInput').value;
+            if (!ticker) {
+                addMessage('Please enter a ticker', 'error');
+                return;
+            }
+            
+            sendRequest('UNSUBSCRIBE_FROM_TICKER', { ticker: ticker });
+        }
+
+        function ping() {
+            sendRequest('PING');
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        // Auto-connect on page load
+        window.onload = function() {
+            // Uncomment the line below to auto-connect
+            // connect();
+        };
+    </script>
+</body>
+</html> 

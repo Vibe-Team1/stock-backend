@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chart Data</title>
+</head>
+<body>
+    <h1>WebSocket Chart Data</h1>
+    <div id="chartData"></div>
+
+    <script>
+        var socket = new WebSocket("ws://localhost:8080/ws/chart");
+
+        socket.onopen = function(event) {
+            console.log("WebSocket connection opened.");
+        };
+
+        socket.onmessage = function(event) {
+            var chartData = JSON.parse(event.data);
+            var chartDataDiv = document.getElementById("chartData");
+            chartDataDiv.innerHTML = "<pre>" + JSON.stringify(chartData, null, 2) + "</pre>";
+        };
+
+        socket.onclose = function(event) {
+            console.log("WebSocket connection closed.");
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error:", error);
+        };
+    </script>
+</body>
+</html> 
