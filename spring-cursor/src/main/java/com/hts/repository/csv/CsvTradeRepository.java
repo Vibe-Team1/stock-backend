@@ -1,4 +1,4 @@
-package com.hts.repository.impl;
+package com.hts.repository.csv;
 
 import com.hts.domain.Trade;
 import com.hts.repository.TradeRepository;
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Repository
-public class TradeRepositoryImpl implements TradeRepository {
+public class CsvTradeRepository implements TradeRepository {
 
     private final ConcurrentMap<String, Trade> tradeStore = new ConcurrentHashMap<>();
 
@@ -29,14 +29,16 @@ public class TradeRepositoryImpl implements TradeRepository {
     @Override
     public List<Trade> findByAccountId(String accountId) {
         return tradeStore.values().stream()
-                .filter(trade -> trade.getAccountId().equals(accountId))
+                .filter(trade -> trade.getAccount() != null && 
+                               trade.getAccount().getId().toString().equals(accountId))
                 .toList();
     }
 
     @Override
     public List<Trade> findByAccountIdAndTicker(String accountId, String ticker) {
         return tradeStore.values().stream()
-                .filter(trade -> trade.getAccountId().equals(accountId) && 
+                .filter(trade -> trade.getAccount() != null && 
+                               trade.getAccount().getId().toString().equals(accountId) && 
                                trade.getTicker().equals(ticker))
                 .toList();
     }

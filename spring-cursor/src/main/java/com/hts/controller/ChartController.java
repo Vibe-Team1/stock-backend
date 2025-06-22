@@ -4,7 +4,6 @@ import com.hts.domain.ChartInterval;
 import com.hts.dto.ChartDataResponse;
 import com.hts.dto.ErrorResponse;
 import com.hts.service.ChartService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +18,6 @@ public class ChartController {
 
     private final ChartService chartService;
 
-    @Autowired
     public ChartController(ChartService chartService) {
         this.chartService = chartService;
     }

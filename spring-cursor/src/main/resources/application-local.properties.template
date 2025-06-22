@@ -1,0 +1,13 @@
+# Local Development Configuration Template
+# Copy this file to application-local.properties and update with your actual values
+
+# Database Configuration (Local Development)
+spring.datasource.url=jdbc:postgresql://localhost:5432/template1
+spring.datasource.username=template1
+spring.datasource.password=
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Application specific properties (Local Development)
+app.csv.stock-data-file=국내주식기본조회v1.csv
+app.csv.chart-data-file=국내주식분봉차트v1.csv
+app.chart.repository.type=csv 

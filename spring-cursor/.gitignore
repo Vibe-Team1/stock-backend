@@ -49,10 +49,11 @@ Desktop.ini
 logs/
 spring.log
 
-# Application specific
+# Application specific - Environment Properties (Keep out of version control)
 application-local.properties
 application-dev.properties
 application-prod.properties
+application-*.properties
 
 # Database
 *.db

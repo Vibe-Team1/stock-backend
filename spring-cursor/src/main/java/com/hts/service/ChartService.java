@@ -4,7 +4,6 @@ import com.hts.domain.ChartData;
 import com.hts.domain.ChartInterval;
 import com.hts.dto.ChartDataResponse;
 import com.hts.repository.ChartRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,7 +15,6 @@ public class ChartService {
 
     private final ChartRepository chartRepository;
 
-    @Autowired
     public ChartService(ChartRepository chartRepository) {
         this.chartRepository = chartRepository;
     }

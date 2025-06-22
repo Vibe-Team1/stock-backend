@@ -1,4 +1,4 @@
-package com.hts.repository.impl;
+package com.hts.repository.csv;
 
 import com.hts.domain.Stock;
 import com.hts.repository.StockRepository;
@@ -15,12 +15,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-public class StockRepositoryImpl implements StockRepository {
+public class CsvStockRepository implements StockRepository {
 
     private static final String STOCK_DATA_FILE = "국내주식기본조회v1.csv";
     private List<Stock> stockCache;
 
-    public StockRepositoryImpl() {
+    public CsvStockRepository() {
         loadStockData();
     }
 

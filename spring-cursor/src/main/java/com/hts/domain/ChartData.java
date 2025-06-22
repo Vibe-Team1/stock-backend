@@ -1,16 +1,50 @@
 package com.hts.domain;
 
+import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "chart_data")
+@EntityListeners(AuditingEntityListener.class)
 public class ChartData {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(nullable = false)
     private String ticker;
+    
+    @Column(nullable = false)
     private LocalDateTime timestamp;
+    
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal open;
+    
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal high;
+    
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal low;
+    
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal close;
+    
+    @Column(nullable = false)
     private Long volume;
+    
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    @LastModifiedDate
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     public ChartData() {}
 
@@ -26,6 +60,14 @@ public class ChartData {
     }
 
     // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getTicker() {
         return ticker;
     }
@@ -80,5 +122,21 @@ public class ChartData {
 
     public void setVolume(Long volume) {
         this.volume = volume;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 } 

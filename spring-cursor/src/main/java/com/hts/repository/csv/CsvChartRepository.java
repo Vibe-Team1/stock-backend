@@ -1,4 +1,4 @@
-package com.hts.repository.impl;
+package com.hts.repository.csv;
 
 import com.hts.domain.ChartData;
 import com.hts.domain.ChartInterval;
@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class ChartRepositoryImpl implements ChartRepository {
+public class CsvChartRepository implements ChartRepository {
 
     private static final String CHART_DATA_FILE = "국내주식분봉차트v1.csv";
     private List<ChartData> chartDataCache;
 
-    public ChartRepositoryImpl() {
+    public CsvChartRepository() {
         loadChartData();
     }
 

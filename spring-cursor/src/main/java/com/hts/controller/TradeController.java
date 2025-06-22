@@ -3,7 +3,6 @@ package com.hts.controller;
 import com.hts.dto.TradeRequest;
 import com.hts.dto.TradeResponse;
 import com.hts.service.TradeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +15,6 @@ public class TradeController {
 
     private final TradeService tradeService;
 
-    @Autowired
     public TradeController(TradeService tradeService) {
         this.tradeService = tradeService;
     }
